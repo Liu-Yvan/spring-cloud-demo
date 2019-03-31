@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.core.Ordered;
@@ -20,7 +22,6 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@CommonsLog
 @Builder
 @Data
 @AllArgsConstructor
@@ -31,13 +32,14 @@ public class RateLimitByIpGatewayFilter implements GatewayFilter, Ordered {
     int refillTokens;
     Duration refillDuration;
 
+    private static final Log log = LogFactory.getLog(GatewayFilter.class);
     private static final Map<String, Bucket> CACHE = new ConcurrentHashMap<>();
 
-    RateLimitByIpGatewayFilter(int capacity, int refillTokens, Duration refillDuration;) {
+    /*public RateLimitByIpGatewayFilter(int capacity, int refillTokens, Duration refillDuration) {
         this.capacity = capacity;
         this.refillTokens = refillTokens;
         this.refillDuration = refillDuration;
-    }
+    }*/
 
     private Bucket createNewBucket() {
         Refill refill = Refill.of(refillTokens, refillDuration);

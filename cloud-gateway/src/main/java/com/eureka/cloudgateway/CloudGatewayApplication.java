@@ -1,9 +1,7 @@
 package com.eureka.cloudgateway;
 
-import com.eureka.cloudgateway.filter.ElapsedFilter;
-import com.eureka.cloudgateway.filter.ElapsedGatewayFilterFactory;
-import com.eureka.cloudgateway.filter.RateLimitByIpGatewayFilter;
-import com.eureka.cloudgateway.filter.TokenFilter;
+import com.eureka.cloudgateway.filter.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gateway.route.RouteLocator;
@@ -14,6 +12,9 @@ import java.time.Duration;
 
 @SpringBootApplication
 public class CloudGatewayApplication {
+
+    @Autowired
+    private RateLimitByCpuGatewayFilter rateLimitByCpuGatewayFilter;
 
     public static void main(String[] args) {
         SpringApplication.run(CloudGatewayApplication.class, args);
@@ -34,7 +35,14 @@ public class CloudGatewayApplication {
                 )
                 .route(r -> r.path("/throttle/customer/**")
                         .filters(f -> f.stripPrefix(2)
-                                .filter(new RateLimitByIpGatewayFilter(10, 1, Duration.ofSeconds(1)))
+                                .filter(new RateLimitByIpGatewayFilter(10, 1, Duration.ofSeconds(1))))
+                        .uri("lb://CONSUMER")
+                        .order(0)
+                        .id("throttle_customer_service")
+                )
+                .route(r -> r.path("/cpu/customer/**")
+                        .filters(f -> f.stripPrefix(2)
+                                .filter(rateLimitByCpuGatewayFilter))
                         .uri("lb://CONSUMER")
                         .order(0)
                         .id("throttle_customer_service")
@@ -53,4 +61,8 @@ public class CloudGatewayApplication {
         return new ElapsedGatewayFilterFactory();
     }
 
+    @Bean(name = RemoteAddrKeyResolver.BEAN_NAME)
+    public RemoteAddrKeyResolver remoteAddrKeyResolver() {
+        return new RemoteAddrKeyResolver();
+    }
 }
