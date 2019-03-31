@@ -23,7 +23,7 @@ public class RateLimitByCpuGatewayFilter implements GatewayFilter, Ordered {
 
     private static final Log log = LogFactory.getLog(GatewayFilter.class);
     private static final String METRIC_NAME = "system.cpu.usage";
-    private static final double MAX_USAGE = 0.15D;
+    private static final double MAX_USAGE = 0.5D;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
